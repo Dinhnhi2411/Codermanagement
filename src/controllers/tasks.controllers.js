@@ -1,5 +1,5 @@
 const { sendResponse, AppError } = require("../helpers/utils");
-const Task = require("../models/Task");
+const Task = require("../model/Task");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 const taskController = {};
@@ -17,13 +17,13 @@ taskController.createTask = async (req, res, next) => {
     if (task) throw new AppError(400, "Bad request", "Task is existed");
 
     const taskObj = await Task.create(data);
-    sendResponse(res, 200, true, null, "Create task success");
+    sendResponse(res, 200, true,taskObj, null, "Create task success");
   } catch (err) {
     next(err);
   }
 };
 
-// UPDATE TASK
+// EDIT-UPDATE TASK
 
 taskController.updateTask = async (req, res, next) => {
   const { id } = req.params;
@@ -58,7 +58,7 @@ taskController.updateTask = async (req, res, next) => {
     console.log(assignTask);
 
     if (assignTask && owner) {
-      task.onwer.push(id);
+      task.owner.push(id);
       await task.save();
     }
     if (!assignTask && owner) {
@@ -84,11 +84,14 @@ taskController.updateTask = async (req, res, next) => {
 // GET TASK BY ID
 
 taskController.getTaskById = async (req, res, next) => {
-  const { id } = req.params;
+  
 
   try {
+    const { id } = req.params;
+
     if (!ObjectId.isValid(id))
-      throw new AppError(400, "Bad request", "Invalid id");
+    throw new AppError(400, "Bad request", "Invalid id");
+
     const task = await Task.findById(id).populate("owner");
 
     if (!task) throw new AppError(400, "Bad request", "Task is not found");
@@ -100,7 +103,7 @@ taskController.getTaskById = async (req, res, next) => {
 
 // GET ALLS TASKS
 
-ttaskController.getTasks = async (req, res, next) => {
+taskController.getTasks = async (req, res, next) => {
   let { page, limit, owner, status, search } = req.query;
 
   limit = parseInt(limit) || 10;
@@ -157,7 +160,7 @@ ttaskController.getTasks = async (req, res, next) => {
       };
 
     const task = await Task.find(filter)
-      .opulate("owner")
+      .populate("owner")
       .sort({ createAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -173,20 +176,19 @@ ttaskController.getTasks = async (req, res, next) => {
 // DELETE TASKS
 
 taskController.deleteTask = async (req, res, next) => {
-  const { id } = req.params;
+ 
+//   const options = {new:true}
   try {
-    //validate input
-    if (!ObjectId.isValid(id))
-      throw new AppError(400, "Bad request", "Invalid ObjectId");
+    const { id } = req.params;
+    // if (!ObjectId.isValid(id))
+    //   throw new AppError(400, "Bad request", "Invalid ObjectId");
 
-    const deleted = {
-      isDeleted: true,
-    };
-    const task = await Task.findByIdAndUpdate(id, deleted, { new: true });
+   
+    const deleteTask = await Task.findByIdAndUpdate(id,  { isDeleted: true }, { new: true });
 
-    if (!task) throw new AppError(400, "Bad request", "Task is not found");
-    //send res
-    sendResponse(res, 200, true, task, null, "Delete task successfully");
+    if (!deleteTask) throw new AppError(400, "Bad request", "Task is not found");
+    
+    sendResponse(res, 200, true, deleteTask, null, "Delete task successfully");
   } catch (error) {
     next(error);
   }

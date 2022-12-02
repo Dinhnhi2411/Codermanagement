@@ -7,7 +7,7 @@ const {
   deleteTask,
   getTasks,
 } = require("../controllers/tasks.controllers");
-const { getTaskByUserId } = require("../controllers/users.controllers");
+
 /**
  * @route POST api/task
  * @descriptions create a new task

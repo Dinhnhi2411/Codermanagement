@@ -1,5 +1,5 @@
 const express = require('express');
-const { createUser, getUser, getTaskByUserId } = require('../controllers/users.controllers');
+const { createUser, getUser, getUserById } = require('../controllers/users.controllers');
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.get("/", getUser);
  * @access public
  */
 
-router.get("/:id", getTaskByUserId);
+router.get("/:id", getUserById);
 
 //  CREATE a new user (manager's access)
 

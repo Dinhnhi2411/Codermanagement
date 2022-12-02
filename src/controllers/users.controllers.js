@@ -63,7 +63,7 @@ userController.getUser = async (req, res, next ) => {
 
 //  GET USER BY ID 
 
-userController.getTaskByUserId = async (req, res, next ) => {
+userController.getUserById = async (req, res, next ) => {
 
     const {id}= req.params;
 
