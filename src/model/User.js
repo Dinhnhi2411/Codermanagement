@@ -9,10 +9,14 @@ const userSchema = new mongoose.Schema(
       enum: ["manager", "employee"],
       required: true,
     },
+    // tasks: {type:[mongoose.SchemaTypes.ObjectId], ref:"Task"},
+
     isDeleted: { type: Boolean, default: false, required: true },
   },
   { timetamps: true }
 );
+
+
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;

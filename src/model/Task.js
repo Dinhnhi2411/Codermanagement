@@ -16,6 +16,26 @@ const taskSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+taskSchema.pre(/^find/, function (next) {
+
+  if (!("_conditions" in this)) return next();
+
+  if (!("isDeleted" in taskSchema.paths)) {
+    delete this["_conditions"]["all"];
+    return next();
+  }
+
+  if (!("all" in this["_conditions"])) {
+    this["_conditions"].isDeleted = false;
+  } else {
+    delete this["_conditions"]["all"];
+  } 
+
+  next();
+});
+
+
+
 const Task = mongoose.model("Task", taskSchema);
 
 module.exports = Task;
