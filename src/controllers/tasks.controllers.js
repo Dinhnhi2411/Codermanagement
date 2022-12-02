@@ -17,7 +17,7 @@ taskController.createTask = async (req, res, next) => {
     if (task) throw new AppError(400, "Bad request", "Task is existed");
 
     const taskObj = await Task.create(data);
-    sendResponse(res, 200, true,taskObj, null, "Create task success");
+    sendResponse(res, 200, true, taskObj, null, "Create task success");
   } catch (err) {
     next(err);
   }
@@ -84,13 +84,11 @@ taskController.updateTask = async (req, res, next) => {
 // GET TASK BY ID
 
 taskController.getTaskById = async (req, res, next) => {
-  
-
+  const { id } = req.params;
+  if (!id) throw new AppError(402, "Cannot access task", "Bad request");
   try {
-    const { id } = req.params;
-
     if (!ObjectId.isValid(id))
-    throw new AppError(400, "Bad request", "Invalid id");
+      throw new AppError(400, "Bad request", "Invalid id");
 
     const task = await Task.findById(id).populate("owner");
 
@@ -115,6 +113,7 @@ taskController.getTasks = async (req, res, next) => {
     if (status) filter = { status, isDeleted: false };
     if (owner) filter = { owner, isDeleted: false };
 
+    //
     if (search)
       filter = {
         $or: [
@@ -159,9 +158,11 @@ taskController.getTasks = async (req, res, next) => {
         isDeleted: false,
       };
 
+    //    create
+
     const task = await Task.find(filter)
       .populate("owner")
-      .sort({ createAt: -1 })
+      .sort({ createAt: -1, updatedAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -176,18 +177,21 @@ taskController.getTasks = async (req, res, next) => {
 // DELETE TASKS
 
 taskController.deleteTask = async (req, res, next) => {
- 
-//   const options = {new:true}
+  //   const options = {new:true}
   try {
     const { id } = req.params;
     // if (!ObjectId.isValid(id))
     //   throw new AppError(400, "Bad request", "Invalid ObjectId");
 
-   
-    const deleteTask = await Task.findByIdAndUpdate(id,  { isDeleted: true }, { new: true });
+    const deleteTask = await Task.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
 
-    if (!deleteTask) throw new AppError(400, "Bad request", "Task is not found");
-    
+    if (!deleteTask)
+      throw new AppError(400, "Bad request", "Task is not found");
+
     sendResponse(res, 200, true, deleteTask, null, "Delete task successfully");
   } catch (error) {
     next(error);
