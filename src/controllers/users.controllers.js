@@ -83,7 +83,7 @@ userController.getUserById = async (req, res, next) => {
     if (!userId) {
       throw new AppError(400, "Bad request", " Not Found Employee");
     }
-    console.log(userId);
+    // console.log(userId);
     const getTask = await Task.find({ owner: id });
     if (!getTask && getTask.length === 0) {
       return sendResponse(
