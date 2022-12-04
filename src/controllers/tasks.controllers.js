@@ -1,5 +1,6 @@
 const { sendResponse, AppError } = require("../helpers/utils");
 const Task = require("../model/Task");
+const User = require("../model/User");
 const ObjectId = require("mongoose").Types.ObjectId;
 const taskController = {};
 
@@ -28,55 +29,81 @@ taskController.updateTask = async (req, res, next) => {
   const { id } = req.params;
   const update = req.body;
   const { status, owner } = update;
-  const allowUpdate = ["working", "review", "done", "archive"];
-
+  const allowUpdate = ["pending", "working", "review", "done", "archive"];
   try {
+    //check invalid mongo object id
     if (!ObjectId.isValid(id))
-      throw new AppError(400, "Bad request", "Ivalid id");
+      throw new AppError(400, "Invalid ObjectId", "Bad request");
+    //missing status
+    if (!status) throw new AppError(400, "Missing status", "Bad request");
+
     let task = await Task.findById(id);
 
-    const nowStatus = allowUpdate.find((e) => e === status);
-
+    //check allowance status
+    const currentStatus = allowUpdate.find((e) => e === status);
+    //status is set done, it can’t be changed to other value except archive
     if (task.status === "done") {
-      if (nowStatus != "archive") {
-        throw new AppError(400, "Bad request", "Done task, now just archive");
+      if (currentStatus !== "archive") {
+        throw new AppError(
+          400,
+          "Done task just store as archive status",
+          "Bad request"
+        );
       } else {
-        const updated = await Task.findByIdAndUpdate(id, update, { new: true });
-        sendResponse(res, 200, true, updated, null, "Update task success");
+        const updated = await Task.findByIdAndUpdate(id, update, {
+          new: true,
+        });
+        sendResponse(res, 200, true, updated, null, "update task successfully");
         return;
       }
     }
 
-    if (!nowStatus) {
-      throw new AppError(400, "Bad request", "Status is not allow");
+    if (!currentStatus) {
+      throw new AppError(403, "Status is not allow", "Bad request");
     }
 
-    // assign tasks
-
-    const assignTask = task.owner[0]._id.toString() != owner;
+    //assign task
+    const assignTask = task.owner[0]?._id.toString() !== owner;
     console.log(assignTask);
 
     if (assignTask && owner) {
       task.owner.push(id);
       await task.save();
     }
+
+    // unassign task
     if (!assignTask && owner) {
-      const updated = await task.findByIdAndUpdate(
+      const updated = await Task.findByIdAndUpdate(
         id,
         { ...update, owner: [] },
         { new: true }
       );
-      sendResponse(res, 200, true, updated, null, "Remove assign success");
+      sendResponse(res, 200, true, updated, null, "Unassign task successfully");
     }
 
-    if (!status) throw new AppError(400, "Bad request", "Missing status");
-
-    if ((nowStatus && assignTask) || (nowStatus && !owner)) {
+    if ((currentStatus && assignTask) || (currentStatus && !owner)) {
       const updated = await Task.findByIdAndUpdate(id, update, { new: true });
-      sendResponse(res, 200, true, updated, null, " Update task success");
+      sendResponse(res, 200, true, updated, null, "update task successfully");
     }
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
+  }
+};
+
+taskController.getTaskById = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    //check invalid mongo object id
+    if (!ObjectId.isValid(id))
+      throw new AppError(400, "Invalid ObjectId", "Bad request");
+
+    const task = await Task.findById(id).populate("owner");
+    //check task is not found
+    if (!task) throw new AppError(404, "Task is not found", "Bad request");
+    sendResponse(res, 200, true, task, null, "Get task successfully");
+  } catch (error) {
+    next(error);
   }
 };
 
