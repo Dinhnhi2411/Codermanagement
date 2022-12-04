@@ -83,24 +83,16 @@ taskController.updateTask = async (req, res, next) => {
 // GET TASK BY ID
 
 taskController.getTaskById = async (req, res, next) => {
- const { id } = req.params;
+  const { id } = req.params;
 
   if (!id) throw new AppError(402, "Cannot access task", "Bad request");
-
   try {
-   if (!ObjectId.isValid(id))
+    if (!ObjectId.isValid(id))
       throw new AppError(400, "Bad request", "Ivalid id");
     // Find task by id
     const found = await Task.findOne({ _id: `${id}` });
-    
-    sendResponse(
-      res,
-      200,
-      true,
-      found,
-      null,
-      "Get task successfully"
-    );
+
+    sendResponse(res, 200, true, found, null, "Get task successfully");
   } catch (error) {
     next(error);
   }
