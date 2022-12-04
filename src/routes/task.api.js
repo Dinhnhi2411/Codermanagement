@@ -23,14 +23,13 @@ router.post("/", createTask);
  * @access private, assigner
  * @allowUpdates : {
  * "description": string,
- * "newStatus":string,
- * "newOwner":objectId string to assign task,
- * "removeOwner":objectId string to awner
+ * "new status":string,
+ * "new owner":objectId string to assign task,
+ * "remove owner":objectId string to owner
  * }
  */
 
 router.put("/:id", updateTask);
-
 
 // GET BY ID TASK
 /**
@@ -41,7 +40,6 @@ router.put("/:id", updateTask);
 
 router.get("/:id", getTaskById);
 
-
 // GET ALL TASKS
 /**
  * @route GET api/tasks
@@ -51,17 +49,13 @@ router.get("/:id", getTaskById);
 
 router.get("/", getTasks);
 
-
-// DELETE TASK 
+// DELETE TASK
 /**
  * @route DELETE api/tasks/:id
  * @description delete task when done
  * @access private, assigner
  */
 
-
-
 router.delete("/:id", deleteTask);
-
 
 module.exports = router;
